@@ -1,0 +1,15 @@
+﻿<Properties StartupItem="Assembly-CSharp.csproj">
+  <MonoDevelop.Ide.Workspace ActiveConfiguration="Debug" PreferredExecutionTarget="Unity.Instance.Unity Editor" />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\scripts\BoardManager.cs">
+    <Files>
+      <File FileName="Assets\scripts\BoardManager.cs" Line="138" Column="38" />
+      <File FileName="Assets\scripts\Highlights.cs" Line="44" Column="2" />
+      <File FileName="Assets\scripts\Piece.cs" Line="11" Column="14" />
+      <File FileName="Assets\scripts\Pawn.cs" Line="68" Column="16" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
