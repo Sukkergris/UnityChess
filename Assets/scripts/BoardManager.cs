@@ -17,6 +17,11 @@ public class BoardManager : MonoBehaviour {
 	private int selectionX = -1;
 	private int selectionZ = -1;
 
+	private bool castlingW = true;
+	private bool castlingB = true;
+
+	private bool check = false;
+
 	public List<GameObject> chessPiecePrefabs;
 	private List<GameObject> activeChessPiece;
 
@@ -43,6 +48,7 @@ public class BoardManager : MonoBehaviour {
 	
 	// Update is called once per frame
 	void Update () {
+		Debug.Log (check);
 		UpdateSelection ();
 		//DrawChessBoard ();
 		if (Input.GetMouseButtonDown(0)) {
@@ -57,6 +63,11 @@ public class BoardManager : MonoBehaviour {
 				}
 			}
 		}
+	}
+
+	public bool GetCheck()
+	{
+		return check;
 	}
 
 	private void SelectPiece(int x, int y)
@@ -97,11 +108,11 @@ public class BoardManager : MonoBehaviour {
 	private void MovePiece(int x, int y)
 	{
 		if (allowedMoves[x, y]) {
+			Piece tmpRook = null;
+			King tmpKing = null;
+			int[] tmpRookTarget = new int[2];
 			Piece c = ChessPieces [x, y];
 			if (c != null && c.isWhite != isWhiteTurn) {
-				//Capture piece
-
-				//If it is the king
 				if (c.GetType() == typeof(King)) {
 					EndGame ();
 					return;
@@ -148,6 +159,44 @@ public class BoardManager : MonoBehaviour {
 				}
 			}
 
+			if (selectedPiece.GetType() == typeof(King) && selectedPiece.isWhite && castlingW && Math.Abs(selectedPiece._X - x) == 2) {
+				tmpKing = (King)selectedPiece;
+				castlingW = false;
+				if (selectedPiece._X < x) {
+					tmpRook = ChessPieces [7, 0];
+					tmpRookTarget [0] = selectedPiece._X + 1;
+					tmpRookTarget [1] = selectedPiece._Y;
+				}
+				else {
+					tmpRook = ChessPieces [0, 0];
+					tmpRookTarget [0] = selectedPiece._X - 1;
+					tmpRookTarget [1] = selectedPiece._Y;
+				}
+				tmpKing.SetCastleFalse ();
+			}
+
+			if (selectedPiece.GetType() == typeof(King) && !selectedPiece.isWhite && castlingB && Math.Abs(selectedPiece._X - x) == 2) {
+				tmpKing = (King)selectedPiece;
+				castlingB = false;
+				if (selectedPiece._X < x) {
+					tmpRook = ChessPieces [7, 7];
+					tmpRookTarget [0] = selectedPiece._X + 1;
+					tmpRookTarget [1] = selectedPiece._Y;
+				}
+				else {
+					tmpRook = ChessPieces [0, 7];
+					tmpRookTarget [0] = selectedPiece._X - 1;
+					tmpRookTarget [1] = selectedPiece._Y;
+				}
+				tmpKing.SetCastleFalse ();
+			}
+
+			if (tmpRook != null) {
+				tmpRook.transform.position = fieldCenter (tmpRookTarget[0], tmpRookTarget[1]);
+				tmpRook.SetPos(tmpRookTarget[0], tmpRookTarget[1]);
+				ChessPieces [tmpRookTarget [0], tmpRookTarget [1]] = tmpRook;
+			}
+
 			ChessPieces [selectedPiece._X, selectedPiece._Y] = null;
 			selectedPiece.transform.position = fieldCenter (x, y);
 			selectedPiece.SetPos (x, y);
@@ -159,9 +208,9 @@ public class BoardManager : MonoBehaviour {
 		}
 
 		selectedPiece.GetComponent<MeshRenderer> ().material = prevMat;
-		RotateCam ();
 		Highlights.Instance.HideHighlights ();
 		selectedPiece = null;
+		UpdateCheck ();
 	}
 
 	private void SpawnAllPieces()
@@ -260,19 +309,6 @@ public class BoardManager : MonoBehaviour {
 		}
 	}
 
-	private void RotateCam()
-	{
-		Transform boardPos = GameObject.Find ("ChessBoard").GetComponent<Transform> ();
-		float zdiff = boardPos.position.z - initCamPos.z;
-		if (isWhiteTurn) {
-			cam.transform.position = initCamPos;
-			cam.transform.rotation = Quaternion.Euler (50.0f, 0.0f, 0.0f);
-		} else {
-			cam.transform.position = initCamPos + new Vector3 (0, 0, zdiff * 2);
-			cam.transform.rotation = Quaternion.Euler (50.0f, 180.0f, 0.0f);
-		}
-	}
-
 	private void EndGame()
 	{
 		if (isWhiteTurn) {
@@ -290,5 +326,59 @@ public class BoardManager : MonoBehaviour {
 		isWhiteTurn = true;
 		Highlights.Instance.HideHighlights ();
 		SpawnAllPieces ();
+	}
+
+	public void UpdateCheck()
+	{
+		foreach (Piece p in ChessPieces) {
+			//Check if any move can take the enemy king.
+			if (isWhiteTurn) 
+			{
+				if (p != null) {
+					if (!p.isWhite) {
+						if (UpdateCheckHelp (p)) {
+							check = true;
+							return;
+						}
+					}
+				}
+			} 
+			else 
+			{
+				if (p != null) {
+					if (p.isWhite) {
+						if (UpdateCheckHelp (p)) {
+							check = true;
+							return;
+						}
+					}
+				}
+			}
+			check = false;
+		}
+	}
+
+	public bool UpdateCheckHelp(Piece p)
+	{
+		Piece c;
+		bool[,] moves = p.PossibleMoves();
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if (moves[i, j]) {
+					c = ChessPieces [i, j];
+					if (c != null && c.GetType() == typeof(King)) {
+						if (c.isWhite != p.isWhite) {
+							return true;
+						}
+					}
+				}
+			}
+		}
+		return false;
+	}
+
+	private void CheckMate()
+	{
+
 	}
 }

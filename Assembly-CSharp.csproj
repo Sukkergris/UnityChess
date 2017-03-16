@@ -48,6 +48,7 @@
   <ItemGroup>
      <Compile Include="Assets\scripts\Bishop.cs" />
      <Compile Include="Assets\scripts\BoardManager.cs" />
+     <Compile Include="Assets\scripts\Camerabehavior.cs" />
      <Compile Include="Assets\scripts\Highlights.cs" />
      <Compile Include="Assets\scripts\King.cs" />
      <Compile Include="Assets\scripts\Knight.cs" />
